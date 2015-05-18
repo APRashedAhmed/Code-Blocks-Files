@@ -4,4 +4,4 @@
 **
 
 #except .cpp source
-!**.cpp
+!**/.cpp
