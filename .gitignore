@@ -1,7 +1,7 @@
 # It will ignore everything that does not end in cpp
 
 #ignore everything
-*
+**
 
 #except .cpp source
-!*.cpp
+!**.cpp
