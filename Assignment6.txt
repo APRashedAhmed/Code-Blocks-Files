@@ -1,0 +1,132 @@
+#include <iostream>
+#include <fstream>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+#include <iomanip>
+
+using namespace std;
+
+const double J = 1.0;
+const double kT = 3;
+
+const int n = 32;
+
+double drand48()
+{
+    return ((double)rand())/RAND_MAX;
+}
+
+void InitMic(int S[n][n])
+{
+    for (int i=0; i < n; i++)
+    {
+        for (int j=0; j < n; j++)
+        {
+            if (drand48() < 0.5)
+                S[i][j] = -1;
+            else
+                S[i][j] = 1;
+        }
+    }
+}
+
+void PrintMic(int S[n][n])
+{
+    for (int i=0; i < n; i++)
+    {
+        for (int j=0; j < n; j++)
+        {
+            if (S[i][j] == 1)
+                cout << "+";
+            else
+                cout << " ";
+        }
+        cout << endl;
+    }
+}
+
+void FlipMic(int S[n][n], int i, int j)
+{
+    S[i][j] *= -1;
+}
+
+int ValMic(int S[n][n], int i, int j)
+{
+    i = i % n;
+    j = j % n;
+
+    if (i < 0)
+        i += n;
+
+    if (j < 0)
+        j += n;
+
+    return S[i][j];
+}
+
+double MicMag(int S[n][n])
+{
+    double sum = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+            sum += S[i][j];
+    }
+    return sum / n / n;
+}
+
+double MicEn(int S[n][n])
+{
+    double E = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            E += ValMic(S, i, j) * ValMic(S, i+1, j);
+            E += ValMic(S, i, j) * ValMic(S, i, j+1);
+        }
+    }
+    return -J*E;
+}
+
+int main()
+{
+    srand(time(NULL));
+
+    int S[n][n];
+
+    InitMic(S);
+
+    double E = MicEn(S);
+    double M = MicMag(S);
+    double esum, msum;
+
+    int N = 1E4;
+
+    for (int i = 0; i < N; i++)
+    {
+        int r = (int)(((double)n) * drand48());
+        int c = (int)(((double)n) * drand48());
+
+        FlipMic(S, r, c);
+
+        int Et = MicEn(S);
+        int dE = Et- E;
+
+        double ratio = exp((-E + Et)/kT);
+        double random = drand48();
+
+        if (ratio > 1 || ratio > random)
+        {
+            E = Et;
+            M = MicMag(S);
+        }
+        else
+            FlipMic(S, r, c);
+
+        cout << setw(5) << i << setw(15) << E/(n*n) << setw(15) << M << endl;
+        i++;
+    }
+}

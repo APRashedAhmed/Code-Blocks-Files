@@ -1,0 +1,168 @@
+//Results for all three Ns in the bottom
+
+#include <iostream>
+#include <cmath>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <iomanip>
+
+using namespace std;
+
+const int N = 100000;
+const int n = 1000;
+
+double drand48()
+{
+    return ((double)rand())/RAND_MAX;
+}
+
+double f(double x)
+{
+    return (exp(x) - 1.0)/(exp(1.0) - 2.0);
+}
+
+double p(double x)
+{
+    return 2.0 * x;
+}
+
+double RandSamp()
+{
+    double sum = 0;
+
+    for(int i = 0; i < N; i++)
+    {
+        double x = drand48();
+        sum += f(x);
+    }
+
+    double ans = sum / N;
+    return ans;
+}
+
+double ImpSamp()
+{
+    double sum = 0;
+
+    for(int i = 0; i < N; i++)
+    {
+        double y = drand48();
+
+        //y can sometimes be too small ~0
+        while(y < 0.0000001)
+            y = drand48();
+
+        sum += (f(sqrt(y)) / p(sqrt(y)));
+    }
+    double ans = sum / N;
+    return ans;
+}
+
+double MetroMeth()
+{
+    double sum = 0;
+
+    double x_m = 1;
+    double x_t = drand48();
+
+    for(int i = 0; i < N; i++)
+    {
+        sum += f(x_m)/p(x_m);
+
+        x_t = drand48();
+
+        if (x_t >= x_m)
+            x_m = x_t;
+
+        else
+        {
+            double r = drand48();
+            if (r < x_t/x_m)
+                x_m = x_t;
+        }
+    }
+
+    double ans = sum / N;
+    return ans;
+}
+
+//This points var to function A
+//Syntax is to put the same type of function that you will input (in this case, a double) followed
+//by a *A in parentheses, and then the input types in another set after it. Then when you call it
+//in main, you just use the name of the function you are pointing to.
+double var(double (*A)())
+{
+    double B[N];
+    double ave = 0;
+    double var = 0;
+
+    for(int i = 0; i < n; i++)
+    {
+        ave += A();
+        B[i] = A();
+    }
+
+    ave = ave/n;
+
+    for(int i = 0; i < n; i++)
+        var += (B[i]-ave)*(B[i]-ave);
+
+    var = var/n;
+    return var;
+}
+
+double sig(double (*A)())
+{
+    return sqrt(var(A));
+}
+
+//Smaller is better
+double Acc(double (*A)())
+{
+    double ave = 0;
+
+    for(int i = 0; i<n; i++)
+        ave += abs(1-A());
+
+    return ave/N;
+}
+
+int main()
+{
+    srand(time(NULL));
+
+    double RS = RandSamp();
+    double IS = ImpSamp();
+    double MM = MetroMeth();
+
+//Notice the lack of () in the Randsamp used below.
+
+    cout << "For N = " << N << ": " << endl;
+    cout << setw(15) << "Sampling" << setw(20) << "Estimate" << setw(20) << "Deviation" << endl;
+
+    cout << setw(15) << "Random" << setw(20) << RS << setw(20) << sig(RandSamp)<< endl;
+    cout << setw(15) << "Important" << setw(20) << IS << setw(20) << sig(ImpSamp)<< endl;
+    cout << setw(15) << "Metropolis" << setw(20) << MM << setw(20) << sig(MetroMeth)<< endl;
+}
+//For N = 1000:
+//      Sampling            Estimate           Deviation
+//         Random            0.987592           0.0214244
+//      Important             1.00588           0.0039195
+//     Metropolis            0.996408          0.00613142
+
+//For N = 10000:
+//       Sampling            Estimate           Deviation
+//         Random            0.997653          0.00689287
+//      Important             1.00151          0.00126516
+//     Metropolis            0.997682          0.00196559
+
+//For N = 100000:
+//       Sampling            Estimate           Deviation
+//         Random            0.995575          0.00220962
+//      Important             1.00085         0.000397988
+//     Metropolis             1.00047          0.00064126
+
+
+
+

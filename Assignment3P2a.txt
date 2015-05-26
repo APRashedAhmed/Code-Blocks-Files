@@ -1,0 +1,44 @@
+//Code for part 2 where a0 is set to 1.2 and we maintain small angle oscillations
+//then compare the initial conditions of x0 = .2 and x0= .2001
+
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+
+using namespace std;
+
+const int n=5000;
+
+double w0 = 1.0;
+double j = .5;
+double w = 0.667;
+double a0 = 1.2;
+
+double f(double x, double v, double t)
+{
+    return - w0 * w0 * sin(x) - j * v + a0 * sin(w*t);
+}
+
+int main()
+{
+    double dt=.05;
+
+    double x[n],v[n],t[n];
+    x[0] = .200;
+    v[0] = 0;
+    t[0] = 0;
+
+    x[1]= x[0]+ v[0]*dt;
+    t[1]= t[0]+ dt;
+    v[1]= v[0]+ f(x[0],v[0],t[0])*dt;
+
+    for(int i=1; i<n; i++)
+    {
+        x[i+1] = (2*x[i] - (w0*w0*dt*dt) * sin(x[i]) + (-1+.5*(j*dt)) * x[i-1] + a0 * sin(w*t[i])*dt*dt)/(1 + .5*j*dt);
+        v[i+1] = (x[i+1]-x[i-1])/(2*dt);
+        t[i+1] = t[i]+dt;
+    }
+    
+    for(int i=0; i<n; i++)
+        cout<< setw(20) << t[i] << setw(20) << x[i] <<endl;
+}

@@ -1,0 +1,46 @@
+//Code for Part 1 where I compared the small angle deflections to the large angle
+//deflections with a0 = 1, j = 0.5, w = 2/3, and w0 = 1.
+
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+
+using namespace std;
+
+const int n=1000;
+
+double w0 = 1.0;
+double j = .5;
+double w = 0.667;
+double a0 = .5;
+
+double f(double x, double v, double t)
+{
+    return -w0 * w0 * sin(x) - j * v + a0 * sin(w*t);
+}
+
+int main()
+{
+    double dt=.05;
+
+    double x[n],v[n],t[n];
+    x[0] = 0.200;
+    v[0] = 0;
+    t[0] = 0;
+
+    x[1]= x[0]+ v[0]*dt;
+    t[1]= t[0]+ dt;
+    v[1]= v[0]+ f(x[0],v[0],t[0])*dt;
+
+    for(int i=1; i<n; i++)
+    {
+        x[i+1] = (2*x[i] - (w0*w0*dt*dt) * sin(x[i]) + (-1+.5*(j*dt)) * x[i-1] + a0 * sin(w*t[i])*dt*dt) / (1+ .5*j*dt);
+        v[i+1] = (x[i+1]-x[i-1])/(2*dt);
+        t[i+1] = t[i]+dt;
+    }
+
+    for(int i=0; i<n; i++)
+    {
+        cout<< setw(20) << t[i] << setw(20) << x[i] <<endl;
+    }
+}

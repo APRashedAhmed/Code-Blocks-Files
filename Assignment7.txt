@@ -1,0 +1,72 @@
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+#include <math.h>
+#include <stdlib.h>
+#include <complex>
+#include <fftw3.h>
+
+using namespace std;
+
+typedef complex<double> doublecomplex;
+
+const int n = 16;
+const double pi = acos(-1.0);
+
+void Initxn(doublecomplex wn[n])
+{
+    doublecomplex w = doublecomplex(cos(2.0*pi/n),sin(2.0*pi/n));
+
+    wn[0] = 1;
+    for(int i = 1; i < n; i++)
+        wn[i] = wn[i-1] * w;
+}
+
+void Initfx(doublecomplex fx[n])
+{
+    for(int i = 0; i < n; i++)
+        fx[i] = doublecomplex(1.0,0.0);
+}
+
+void FT(doublecomplex wn[n], doublecomplex fx[n], doublecomplex Fq[n])
+{
+    for(int i = 0; i < n; i++)
+    {
+        Fq[i] = doublecomplex(0.0,0.0);
+
+        for(int j = 0; j < n; j++)
+        {
+            int q = (i*j)%n;
+            Fq[i] += wn[q] * fx[j];
+        }
+    }
+}
+int main()
+{
+    doublecomplex z, wn[n], fx[n], Fq[n], FFTFq[n];
+
+    Initxn(wn);
+    Initfx(fx);
+
+    FT(wn, fx, Fq);
+
+    cout << setw(20) << " fx(i) " << setw(20) << " Fq(q) " << endl;
+
+    for(int i = 0; i < n; i++)
+    {
+        z = Fq[i] / double(n);
+        cout << setw(20) << fx[i] << " ##### " << setw(20) << z << endl;
+    }
+
+    fftw_plan p;
+        p = fftw_plan_dft_1d(n,reinterpret_cast<fftw_complex*>(&fx[0]), reinterpret_cast<fftw_complex*>(&FFTFq[0]), FFTW_FORWARD, FFTW_ESTIMATE);
+        fftw_execute(p);
+
+    cout << setw(20) << " fx(i) " << setw(20) << " FFTFq(q) " << endl;
+
+    for(int i = 0; i < n; i++)
+    {
+        z = FFTFq[i] / double(n);
+        cout << setw(20) << fx[i] << " ##### " << setw(20) << z << endl;
+    }
+}
